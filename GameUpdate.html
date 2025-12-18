@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monkey Math Game - Improved</title>
+    <img id="monkey-image" src="monkey.png" style="display: none;" alt="Monkey">
+    <img id="human-image" src="human.png" style="display: none;" alt="Human">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        p {
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .story-text {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #FF8C00, #FF7F00);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        canvas {
+            border: 3px solid #5d4037;
+            border-radius: 10px;
+            background: #1a1a2e;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .tutorial-step, .practice-step {
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .tutorial-step.active, .practice-step.active {
+            display: block;
+        }
+
+        .math-problem {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .answer-input {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 2px solid #FFA500;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            width: 200px;
+            margin: 10px;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .controls-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .practice-canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .practice-canvas {
+            border: 2px solid #5d4037;
+            border-radius: 8px;
+            background: #1a1a2e;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFA500, #FFD700);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .collection-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .collection-item {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid transparent;
+        }
+
+        .collection-item.collected {
+            background: #4CAF50;
+            border-color: #8BC34A;
+        }
+
+        .hint-box {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .mobile-controls.active {
+            display: flex;
+            pointer-events: auto;
+        }
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 165, 0, 0.9);
+            border: 3px solid #FF8C00;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .mobile-btn:active {
+            background: rgba(255, 140, 0, 1);
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .jump-btn {
+            background: rgba(0, 128, 0, 0.9);
+            border-color: #006400;
+        }
+
+        .jump-btn:active {
+            background: rgba(0, 100, 0, 1);
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+                min-height: 44px;
+                min-width: 120px;
+                padding: 15px 30px;
+                font-size: 1.1rem;
+                min-height: 50px;
+            }
+            
+            .mobile-controls {
+                display: none;
+            }
+            
+            .mobile-controls.active {
+                display: flex;
+            }
+        }
+
+        .victory-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .victory-canvas {
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .transformation-animation {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .character {
+            position: absolute;
+            transition: all 2s ease-in-out;
+        }
+
+        .monkey-character {
+            width: 100px;
+            height: 120px;
+            background: #8B4513;
+            border-radius: 50% 50% 40% 40%;
+        }
+
+        .human-character {
+            width: 80px;
+            height: 160px;
+            background: #ffdbac;
+            border-radius: 40% 40% 30% 30%;
+            opacity: 0;
+        }
+
+        .potion-effect {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(138,43,226,0.8) 0%, rgba(255,215,0,0.4) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes transform {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .transforming {
+            animation: transform 2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="story-screen" class="screen active">
+            <h1>Petualangan Matematika Monyet</h1>
+            <div class="story-text">
+                <p>Selamat datang di Petualangan Matematika Monyet!</p>
+                <p>Kamu adalah mahasiswa pintar yang dikutuk menjadi seekor monyet. 
+                   Untuk bisa kembali menjadi manusia, kamu harus mengumpulkan ramuan ajaib dengan menjawab 
+                   soal-soal matematika yang menantang.</p>
+                <p>Di hutan ini, kamu akan menemui tiga jenis tantangan matematika:</p>
+                <ul style="text-align: left; margin: 15px 25px;">
+                    <li><strong>Fungsi</strong>: Memahami hubungan antara input dan output</li>
+                    <li><strong>Limit</strong>: Menemukan nilai pendekatan fungsi</li>
+                    <li><strong>Turunan</strong>: Menghitung laju perubahan fungsi</li>
+                </ul>
+                <p>Bersiaplah untuk petualangan yang seru dan mendidik!</p>
+            </div>
+            <button id="next-story-btn" class="btn">Lanjutkan</button>
+        </div>
+
+        <div id="tutorial-screen" class="screen">
+            <h1>Tutorial Matematika</h1>
+            <div class="tutorial-steps">
+                <div id="step-fungsi" class="tutorial-step active">
+                    <h2>Fungsi Matematika</h2>
+                    <p>Fungsi adalah hubungan antara input (x) dan output (f(x)).</p>
+                    <p>Contoh: f(x) = 3x - 7</p>
+                    <p>Jika x = 5, maka f(5) = 3×5 - 7 = 8</p>
+                    <p>Dalam game, kamu akan mencari nilai x dan menghitung f(x).</p>
+                </div>
+                <div id="step-limit" class="tutorial-step">
+                    <h2>Limit Fungsi</h2>
+                    <p>Limit adalah nilai yang didekati oleh fungsi saat input mendekati suatu titik.</p>
+                    <p>Contoh: lim(x→2) (x²-4)(x+1)/(x-2) = (x+2)(X-2)(X+1)/(X-2)</p>
+                    <p>= (x+2)(x+1)</p>
+                    <p>= (2+2)(2+1)</p>
+                    <p>= 4x3</p>
+                    <p>= 12</p>
+                    <p>Dalam game, hindari barrel dan kumpulkan angka untuk menyelesaikan limit.</p>
+                </div>
+                <div id="step-turunan" class="tutorial-step">
+                    <h2>Turunan Fungsi</h2>
+                    <p>Turunan mengukur laju perubahan fungsi pada titik tertentu.</p>
+                    <p>Contoh: Jika f(x) = ax<sup>n</sup>, maka f'(x) = (a.n)x<sup>n-1</sup></p>
+                    <p>Contoh: Jika f(x) = 5x²-x</p>
+                    <p>f'(x) = (5.2)x<sup>2-1</sup>-(1)x<sup>1-1</sup></p>
+                    <p>f'(x) = 10x<sup>1</sup>-x<sup>0</sup></p>
+                    <p>maka f'(x) = 10x - 1</p>
+                    <p>Dalam game, kumpulkan koefisien untuk menemukan turunan.</p>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="prev-tutorial-btn" class="btn" disabled>Sebelumnya</button>
+                <button id="next-tutorial-btn" class="btn">Selanjutnya</button>
+                <button id="practice-btn" class="btn" style="display: none;">Latihan</button>
+            </div>
+        </div>
+
+        <div id="practice-screen" class="screen">
+            <h1>Mode Latihan</h1>
+            <div class="practice-steps">
+                <div id="practice-fungsi" class="practice-step active">
+                    <h2>Latihan Fungsi</h2>
+                    <div class="practice-canvas-container">
+                        <canvas id="fungsi-canvas" width="600" height="400" class="practice-canvas"></canvas>
+                        <div class="math-problem">
+                            <p>Lompat ke platform emas untuk mendapatkan nilai x, kemudian hitung f(x) = 2x + 3</p>
+                            <div class="progress-bar">
+                                <div id="fungsi-progress" class="progress-fill"></div>
+                            </div>
+                            <input type="number" id="fungsi-answer" class="answer-input" placeholder="Masukkan jawaban">
+                            <button id="submit-fungsi" class="btn">Periksa</button>
+                            <div id="fungsi-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="practice-limit" class="practice-step">
+                    <h2>Latihan Limit</h2>
+                    <div class="practice-canvas-container">
+                        <canvas id="limit-canvas" width="600" height="400" class="practice-canvas"></canvas>
+                        <div class="math-problem">
+                            <p>Hindari barrel dan kumpulkan angka untuk menyelesaikan limit: lim(x→2) (x²-4)/(x-2)</p>
+                            <div class="collection-indicator">
+                                <div id="limit-item-4" class="collection-item">4</div>
+                                <div id="limit-item-2" class="collection-item">2</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="limit-progress" class="progress-fill"></div>
+                            </div>
+                            <input type="number" id="limit-answer" class="answer-input" placeholder="Masukkan jawaban">
+                            <button id="submit-limit" class="btn">Periksa</button>
+                            <div id="limit-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="practice-turunan" class="practice-step">
+                    <h2>Latihan Turunan</h2>
+                    <div class="practice-canvas-container">
+                        <canvas id="turunan-canvas" width="600" height="400" class="practice-canvas"></canvas>
+                        <div class="math-problem">
+                            <p>Kumpulkan koefisien untuk mencari turunan f(x) = 3x²</p>
+                            <div class="collection-indicator">
+                                <div id="turunan-item-3" class="collection-item">3</div>
+                                <div id="turunan-item-2" class="collection-item">2</div>
+                                <div id="turunan-item-x" class="collection-item">x</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="turunan-progress" class="progress-fill"></div>
+                            </div>
+                            <input type="text" id="turunan-answer" class="answer-input" placeholder="Contoh: 6x">
+                            <button id="submit-turunan" class="btn">Periksa</button>
+                            <div id="turunan-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="prev-practice-btn" class="btn fs-6" disabled>Sebelumnya</button>
+                <button id="next-practice-btn" class="btn fs-6">Selanjutnya</button>
+                <button id="finish-practice-btn" class="btn" style="display: none;">Selesai</button>
+            </div>
+        </div>
+
+        <div id="menu-screen" class="screen">
+            <h1>Menu Utama</h1>
+            <p>Pilih mode permainan yang ingin kamu mainkan:</p>
+            <div class="btn-group" style="flex-direction: column; align-items: center;">
+                <button id="start-btn" class="btn">Mulai Petualangan</button>
+                <button id="tutorial-btn" class="btn">Lihat Tutorial</button>
+                <button id="practice-menu-btn" class="btn">Mode Latihan</button>
+            </div>
+            <div class="controls-info">
+                <h3>Kontrol Permainan:</h3>
+                <p>← → : Bergerak kiri/kanan</p>
+                <p>↑ / Spasi : Lompat</p>
+                <p>A / D : Alternatif gerak kiri/kanan</p>
+                <p>W : Alternatif lompat</p>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <h1>Petualangan Matematika</h1>
+            <div style="position: relative;">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <div class="score-display">Skor: <span id="score">0</span></div>
+            </div>
+            <div class="controls-info">
+                <p>Kumpulkan semua ramuan (?) dan jawab soal matematika untuk mendapatkan poin!</p>
+            </div>
+            <button id="menu-btn" class="btn">Kembali ke Menu</button>
+        </div>
+
+        <div id="math-screen" class="screen">
+            <h1>Soal Matematika</h1>
+            <div class="math-problem">
+                <p id="math-question">Memuat soal...</p>
+                <input type="number" id="answer-input" class="answer-input" placeholder="Masukkan jawaban">
+                <button id="submit-btn" class="btn">Jawab</button>
+                <div id="math-feedback" class="feedback"></div>
+            </div>
+        </div>
+
+        <div id="win-screen" class="screen">
+            <h1>Selamat!</h1>
+            <p>Kamu telah menyelesaikan semua tantangan matematika!</p>
+            <p>Skor Akhir: <span id="final-score">0</span></p>
+            <div class="btn-group">
+                <button id="play-again-btn" class="btn">Preview</button>
+                <button id="main-menu-btn" class="btn">Menu Utama</button>
+            </div>
+        </div>
+
+        <div id="victory-screen" class="screen">
+            <h1>Selamat! Transformasi Berhasil!</h1>
+            <div class="victory-container">
+                <video id="transformation-video" width="600" height="400" controls style="display: none;">
+                    <source src="transformation.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung video.
+                </video>
+                <canvas id="victory-canvas" width="600" height="400" class="victory-canvas"></canvas>
+                <div class="story-text">
+                    <p>Monyet telah meminum semua ramuan ajaib dan berhasil menyelesaikan semua tantangan matematika!</p>
+                    <p>Dengan kekuatan matematika, monyet berubah menjadi manusia yang pintar!</p>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="replay-video-btn" class="btn">Putar Ulang</button>
+                <button id="victory-menu-btn" class="btn">Menu Utama</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-controls" class="mobile-controls">
+        <div class="control-group">
+            <div class="mobile-btn left-btn">←</div>
+            <div class="mobile-btn right-btn">→</div>
+        </div>
+        <div class="control-group">
+            <div class="mobile-btn jump-btn">↑</div>
+        </div>
+    </div>
+
+    <script>
+        class VictoryAnimation {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 600;
+                this.canvas.height = 400;
+                
+                this.animationPhase = 0;
+                this.animationProgress = 0;
+                this.isAnimating = false;
+                
+                this.monkeyImage = document.getElementById('monkey-image');
+                this.humanImage = document.getElementById('human-image');
+                this.imagesLoaded = false;
+                
+                this.checkImagesLoaded();
+            }
+
+            checkImagesLoaded() {
+                if (this.monkeyImage.complete && this.humanImage.complete) {
+                    this.imagesLoaded = true;
+                } else {
+                    this.monkeyImage.onload = () => {
+                        if (this.humanImage.complete) this.imagesLoaded = true;
+                    };
+                    this.humanImage.onload = () => {
+                        if (this.monkeyImage.complete) this.imagesLoaded = true;
+                    };
+                }
+            }
+
+            startAnimation() {
+                this.isAnimating = true;
+                this.animationPhase = 0;
+                this.animationProgress = 0;
+                this.animationLoop();
+            }
+
+            animationLoop() {
+                if (!this.isAnimating) return;
+                
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.renderBackground();
+                
+                switch(this.animationPhase) {
+                    case 0:
+                        this.renderDrinkingPhase();
+                        break;
+                    case 1:
+                        this.renderTransformationPhase();
+                        break;
+                    case 2:
+                        this.renderHumanPhase();
+                        break;
+                }
+                
+                this.animationProgress += 0.016;
+                
+                if (this.animationProgress > 3) {
+                    this.animationProgress = 0;
+                    this.animationPhase++;
+                    
+                    if (this.animationPhase > 2) {
+                        this.animationPhase = 2;
+                    }
+                }
+                
+                requestAnimationFrame(() => this.animationLoop());
+            }
+
+            renderBackground() {
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                gradient.addColorStop(0, '#1a1a2e');
+                gradient.addColorStop(1, '#16213e');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.fillStyle = '#FFFFFF';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * this.canvas.width;
+                    const y = Math.random() * this.canvas.height;
+                    const size = Math.random() * 2;
+                    this.ctx.fillRect(x, y, size, size);
+                }
+            }
+
+            renderDrinkingPhase() {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                if (this.imagesLoaded && this.monkeyImage.complete) {
+                    const monkeyWidth = 160;
+                    const monkeyHeight = 200;
+                    this.ctx.drawImage(
+                        this.monkeyImage, 
+                        centerX - monkeyWidth/2, 
+                        centerY - monkeyHeight/2 - 20,
+                        monkeyWidth, 
+                        monkeyHeight
+                    );
+                } else {
+                    this.drawMonkey(centerX, centerY - 30, 1.8);
+                }
+                
+                this.drawPotion(centerX + 100, centerY - 30, 1.8);
+                
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Monyet meminum ramuan ajaib...', centerX, 50);
+            }
+
+            renderTransformationPhase() {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                const progress = Math.min(this.animationProgress / 3, 1);
+                const glowSize = 150 + progress * 150;
+                
+                const gradient = this.ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, glowSize
+                );
+                gradient.addColorStop(0, 'rgba(138,43,226,0.8)');
+                gradient.addColorStop(0.5, 'rgba(255,215,0,0.4)');
+                gradient.addColorStop(1, 'transparent');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(centerX - glowSize, centerY - glowSize, glowSize * 2, glowSize * 2);
+                
+                const scale = 1.2 + Math.sin(this.animationProgress * 10) * 0.15;
+                this.ctx.save();
+                this.ctx.translate(centerX, centerY);
+                this.ctx.scale(scale, scale);
+                
+                if (progress < 0.5) {
+                    if (this.imagesLoaded && this.monkeyImage.complete) {
+                        const width = 140;
+                        const height = 170;
+                        this.ctx.drawImage(this.monkeyImage, -width/2, -height/2 - 20, width, height);
+                    } else {
+                        this.drawMonkey(0, -30,1.8);
+                    }
+                } else {
+                    const humanProgress = (progress - 0.5) * 2;
+                    this.drawTransitionCharacter(0, -30, humanProgress);
+                }
+                
+                this.ctx.restore();
+                
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Transformasi sedang berlangsung!', centerX, 50);
+            }
+
+            renderHumanPhase() {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                if (this.imagesLoaded && this.humanImage.complete) {
+                    const humanWidth = 150;
+                    const humanHeight = 250;
+                    this.ctx.drawImage(
+                        this.humanImage, 
+                        centerX - humanWidth/2, 
+                        centerY - humanHeight/2 - 10,
+                        humanWidth, 
+                        humanHeight
+                    );
+                } else {
+                    this.drawHuman(centerX, centerY - 60,1.8);
+                }
+                
+                if (this.animationProgress < 1) {
+                    const sparkleProgress = this.animationProgress;
+                    this.drawSparkles(centerX, centerY - 80, sparkleProgress,1.5);
+                }
+                
+                this.ctx.fillStyle = '#00FF00';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Transformasi Berhasil!', centerX, 50);
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText('Monyet telah berubah menjadi manusia pintar!', centerX, 80);
+            }
+
+            drawMonkey(x, y) {
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(x - 25, y, 50, 60);
+                
+                this.ctx.fillStyle = '#ffdbac';
+                this.ctx.fillRect(x - 20, y + 10, 40, 25);
+                
+                this.ctx.fillStyle = '#000000';
+                this.ctx.fillRect(x - 15, y + 18, 8, 8);
+                this.ctx.fillRect(x + 7, y + 18, 8, 8);
+                
+                this.ctx.beginPath();
+                this.ctx.arc(x, y + 30, 8, 0, Math.PI);
+                this.ctx.stroke();
+            }
+
+            drawHuman(x, y) {
+                this.ctx.fillStyle = '#4682b4';
+                this.ctx.fillRect(x - 15, y + 40, 30, 60);
+                
+                this.ctx.fillStyle = '#ffdbac';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y + 30, 20, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = '#000000';
+                this.ctx.fillRect(x - 8, y + 25, 5, 5);
+                this.ctx.fillRect(x + 3, y + 25, 5, 5);
+                this.ctx.beginPath();
+                this.ctx.arc(x, y + 35, 6, 0, Math.PI);
+                this.ctx.stroke();
+                
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y + 15, 22, 0, Math.PI);
+                this.ctx.fill();
+            }
+
+            drawTransitionCharacter(x, y, progress) {
+                if (this.imagesLoaded && this.monkeyImage.complete && this.humanImage.complete) {
+                    const width = 80;
+                    const height = 100;
+                    
+                    this.ctx.globalAlpha = 1 - progress;
+                    this.ctx.drawImage(this.monkeyImage, x - width/2, y - height/2, width, height);
+                    
+                    this.ctx.globalAlpha = progress;
+                    const humanWidth = 100;
+                    const humanHeight = 180;
+                    this.ctx.drawImage(
+                        this.humanImage, 
+                        x - humanWidth/2, 
+                        y - humanHeight/2 + 30,
+                        humanWidth, 
+                        humanHeight
+                    );
+                    
+                    this.ctx.globalAlpha = 1;
+                } else {
+                    const monkeyColor = '#8B4513';
+                    const humanColor = '#ffdbac';
+                    const currentColor = this.interpolateColor(monkeyColor, humanColor, progress);
+                    
+                    this.ctx.fillStyle = currentColor;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y + 30, 20 + progress * 10, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+
+            drawPotion(x, y, scale = 1) {
+                const bottleWidth = 24 * scale;
+                const bottleHeight = 35 * scale;
+                const neckWidth = 12 * scale;
+                const neckHeight = 10 * scale;
+                
+                this.ctx.fillStyle = '#8A2BE2';
+                this.ctx.fillRect(x - bottleWidth/2, y - bottleHeight, bottleWidth, bottleHeight);
+                
+                this.ctx.fillStyle = '#6A0DAD';
+                this.ctx.fillRect(x - neckWidth/2, y - bottleHeight - neckHeight, neckWidth, neckHeight);
+                
+                this.ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+                this.ctx.fillRect(x - bottleWidth/2 + 2 * scale, y - bottleHeight + 5 * scale, bottleWidth - 4 * scale, bottleHeight - 10 * scale);
+                
+                const glowSize = 30 * scale;
+                const gradient = this.ctx.createRadialGradient(x, y - bottleHeight/2, 0, x, y - bottleHeight/2, glowSize);
+                gradient.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+                gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(x - glowSize, y - bottleHeight - glowSize/2, glowSize * 2, glowSize * 2);
+                
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                for (let i = 0; i < 8; i++) {
+                    const bubbleX = x - bottleWidth/2 + 4 * scale + Math.random() * (bottleWidth - 8 * scale);
+                    const bubbleY = y - bottleHeight + 10 * scale + Math.random() * (bottleHeight - 20 * scale);
+                    const size = (2 + Math.random() * 3) * scale;
+                    this.ctx.beginPath();
+                    this.ctx.arc(bubbleX, bubbleY, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+
+            drawSparkles(x, y, progress, scale = 1) {
+                this.ctx.fillStyle = `rgba(255, 215, 0, ${1 - progress})`;
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = progress * 150 * scale;
+                    const sparkleX = x + Math.cos(angle) * distance;
+                    const sparkleY = y + Math.sin(angle) * distance;
+                    const size = (2 + Math.random() * 4) * scale;
+                    this.ctx.fillRect(sparkleX, sparkleY, size, size);
+                }
+            }
+
+            interpolateColor(color1, color2, factor) {
+                const hex1 = color1.replace('#', '');
+                const hex2 = color2.replace('#', '');
+                
+                const r1 = parseInt(hex1.substr(0, 2), 16);
+                const g1 = parseInt(hex1.substr(2, 2), 16);
+                const b1 = parseInt(hex1.substr(4, 2), 16);
+                
+                const r2 = parseInt(hex2.substr(0, 2), 16);
+                const g2 = parseInt(hex2.substr(2, 2), 16);
+                const b2 = parseInt(hex2.substr(4, 2), 16);
+                
+                const r = Math.round(r1 + (r2 - r1) * factor);
+                const g = Math.round(g1 + (g2 - g1) * factor);
+                const b = Math.round(b1 + (b2 - b1) * factor);
+                
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            stopAnimation() {
+                this.isAnimating = false;
+            }
+        }
+
+        class PracticeGame {
+            constructor(canvasId, type) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.type = type;
+                this.isActive = false;
+                this.animationId = null;
+                this.boundKeyDown = null;
+                this.boundKeyUp = null;
+                
+                this.canvas.width = 600;
+                this.canvas.height = 400;
+                
+                this.init();
+            }
+
+            init() {
+                this.player = {
+                    x: 50,
+                    y: 350,
+                    width: 25,
+                    height: 35,
+                    velocityX: 0,
+                    velocityY: 0,
+                    speed: 5,
+                    jumpPower: -12,
+                    gravity: 0.6,
+                    isOnGround: false,
+                    color: '#8B4513'
+                };
+
+                switch(this.type) {
+                    case 'fungsi':
+                        this.setupFungsiGame();
+                        break;
+                    case 'limit':
+                        this.setupLimitGame();
+                        break;
+                    case 'turunan':
+                        this.setupTurunanGame();
+                        break;
+                }
+
+                this.keys = {};
+                this.setupEventListeners();
+                this.setupTouchControls();
+                this.setupSwipeControls();
+            }
+
+            setupEventListeners() {
+                document.removeEventListener('keydown', this.boundKeyDown);
+                document.removeEventListener('keyup', this.boundKeyUp);
+                
+                this.boundKeyDown = this.handleKeyDown.bind(this);
+                this.boundKeyUp = this.handleKeyUp.bind(this);
+                
+                document.addEventListener('keydown', this.boundKeyDown);
+                document.addEventListener('keyup', this.boundKeyUp);
+            }
+
+            setupTouchControls() {
+                if (!this.isMobile()) return;
+                
+                const leftBtn = document.querySelector('.left-btn');
+                const rightBtn = document.querySelector('.right-btn');
+                const jumpBtn = document.querySelector('.jump-btn');
+                
+                if (!leftBtn || !rightBtn || !jumpBtn) return;
+                
+                leftBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys['a'] = true;
+                });
+                
+                rightBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys['d'] = true;
+                });
+                
+                jumpBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys['w'] = true;
+                });
+                
+                leftBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.keys['a'] = false;
+                });
+                
+                rightBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.keys['d'] = false;
+                });
+                
+                jumpBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.keys['w'] = false;
+                });
+                
+                [leftBtn, rightBtn, jumpBtn].forEach(btn => {
+                    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+                });
+            }
+
+            isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       window.innerWidth <= 768;
+            }
+
+            setupFungsiGame() {
+                this.platforms = [
+                    { x: 0, y: 380, width: 600, height: 20, color: '#5d4037' },
+                    { x: 100, y: 300, width: 100, height: 15, color: '#8d6e63' },
+                    { x: 250, y: 250, width: 100, height: 15, color: '#8d6e63' },
+                    { x: 400, y: 200, width: 100, height: 15, color: '#8d6e63' },
+                    { x: 500, y: 150, width: 80, height: 15, color: '#8d6e63' }
+                ];
+
+                this.targetPlatforms = [
+                    { x: 500, y: 150, width: 80, height: 15, color: '#FFD700', value: 2 }
+                ];
+
+                this.collectedValue = null;
+                this.isCompleted = false;
+            }
+
+            setupLimitGame() {
+                this.platforms = [
+                    { x: 0, y: 380, width: 600, height: 20, color: '#5d4037' },
+                    { x: 100, y: 320, width: 80, height: 15, color: '#8d6e63' },
+                    { x: 200, y: 270, width: 80, height: 15, color: '#8d6e63' },
+                    { x: 300, y: 220, width: 80, height: 15, color: '#8d6e63' },
+                    { x: 400, y: 170, width: 80, height: 15, color: '#8d6e63' }
+                ];
+
+                this.barrels = [
+                    { x: 150, y: 300, width: 20, height: 20, speed: 2, direction: 1 },
+                    { x: 350, y: 200, width: 20, height: 20, speed: 3, direction: 1 }
+                ];
+
+                this.numbers = [
+                    { x: 450, y: 150, value: 4, collected: false, revealed: false },
+                    { x: 500, y: 120, value: 2, collected: false, revealed: true }
+                ];
+
+                this.isCompleted = false;
+            }
+
+            setupTurunanGame() {
+                this.platforms = [
+                    { x: 0, y: 380, width: 600, height: 20, color: '#5d4037' },
+                    { x: 80, y: 320, width: 70, height: 15, color: '#8d6e63' },
+                    { x: 180, y: 280, width: 70, height: 15, color: '#8d6e63' },
+                    { x: 280, y: 240, width: 70, height: 15, color: '#8d6e63' },
+                    { x: 380, y: 200, width: 70, height: 15, color: '#8d6e63' },
+                    { x: 480, y: 160, width: 70, height: 15, color: '#8d6e63' }
+                ];
+
+                this.coefficients = [
+                    { x: 100, y: 290, value: 3, collected: false, revealed: false },
+                    { x: 300, y: 210, value: 2, collected: false, revealed: false },
+                    { x: 500, y: 130, value: 'x', collected: false, revealed: true }
+                ];
+
+                this.collectedCoeffs = [];
+                this.isCompleted = false;
+            }
+
+            handleKeyDown(e) {
+                this.keys[e.key.toLowerCase()] = true;
+            }
+
+            handleKeyUp(e) {
+                this.keys[e.key.toLowerCase()] = false;
+            }
+
+            start() {
+                this.isActive = true;
+                this.gameLoop();
+            }
+
+            stop() {
+                this.isActive = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                
+                document.removeEventListener('keydown', this.boundKeyDown);
+                document.removeEventListener('keyup', this.boundKeyUp);
+            }
+
+            gameLoop() {
+                if (!this.isActive) return;
+                
+                this.update();
+                this.render();
+                this.animationId = requestAnimationFrame(() => this.gameLoop());
+            }
+
+            update() {
+                this.handleInput();
+                this.applyPhysics();
+                this.checkCollisions();
+                
+                switch(this.type) {
+                    case 'limit':
+                        this.updateBarrels();
+                        this.checkNumberCollection();
+                        break;
+                    case 'turunan':
+                        this.checkCoefficientCollection();
+                        break;
+                    case 'fungsi':
+                        this.checkTargetPlatform();
+                        break;
+                }
+            }
+
+            handleInput() {
+                if (this.keys['a'] || this.keys['arrowleft']) {
+                    this.player.velocityX = -this.player.speed;
+                } else if (this.keys['d'] || this.keys['arrowright']) {
+                    this.player.velocityX = this.player.speed;
+                } else {
+                    this.player.velocityX *= 0.8;
+                }
+
+                const jumpPressed = this.keys['w'] || this.keys['arrowup'] || this.keys[' '];
+                if (jumpPressed && this.player.isOnGround) {
+                    this.player.velocityY = this.player.jumpPower;
+                    this.player.isOnGround = false;
+                }
+            }
+
+            applyPhysics() {
+                this.player.velocityY += this.player.gravity;
+                this.player.x += this.player.velocityX;
+                this.player.y += this.player.velocityY;
+
+                if (this.player.x < 0) this.player.x = 0;
+                if (this.player.x > this.canvas.width - this.player.width) {
+                    this.player.x = this.canvas.width - this.player.width;
+                }
+
+                if (this.player.y > this.canvas.height - this.player.height) {
+                    this.player.y = this.canvas.height - this.player.height;
+                    this.player.velocityY = 0;
+                    this.player.isOnGround = true;
+                }
+            }
+
+            checkCollisions() {
+                this.player.isOnGround = false;
+                
+                for (let platform of this.platforms) {
+                    if (this.isColliding(this.player, platform)) {
+                        const bottomCollision = this.player.y + this.player.height - platform.y;
+                        
+                        if (bottomCollision < 20 && this.player.velocityY > 0) {
+                            this.player.y = platform.y - this.player.height;
+                            this.player.velocityY = 0;
+                            this.player.isOnGround = true;
+                        }
+                    }
+                }
+
+                if (this.type === 'limit') {
+                    for (let barrel of this.barrels) {
+                        if (this.isColliding(this.player, barrel)) {
+                            this.player.x = 50;
+                            this.player.y = 350;
+                            this.player.velocityX = 0;
+                            this.player.velocityY = 0;
+                        }
+                    }
+                }
+            }
+
+            updateBarrels() {
+                for (let barrel of this.barrels) {
+                    barrel.x += barrel.speed * barrel.direction;
+                    
+                    if (barrel.x <= 0 || barrel.x >= this.canvas.width - barrel.width) {
+                        barrel.direction *= -1;
+                    }
+                }
+            }
+
+            checkTargetPlatform() {
+                for (let platform of this.targetPlatforms) {
+                    const playerBottom = this.player.y + this.player.height;
+                    const playerRight = this.player.x + this.player.width;
+                    const platformBottom = platform.y + platform.height;
+                    const platformRight = platform.x + platform.width;
+                    
+                    const isOnTop = playerBottom >= platform.y && 
+                                   playerBottom <= platform.y + 15 &&
+                                   this.player.velocityY >= 0 &&
+                                   this.player.x < platformRight && 
+                                   playerRight > platform.x;
+
+                    if (isOnTop) {
+                        if (this.collectedValue !== platform.value) {
+                            this.collectedValue = platform.value;
+                            this.updateProgressBar();
+                            this.showCollectedValue();
+                            
+                            const input = document.getElementById('fungsi-answer');
+                            if (input) {
+                                input.focus();
+                                input.placeholder = `f(${this.collectedValue}) = 2×${this.collectedValue} + 3 = ?`;
+                            }
+                            
+                            this.platformFlash = true;
+                            setTimeout(() => this.platformFlash = false, 1000);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            showCollectedValue() {
+                this.showFloatingText(`x = ${this.collectedValue}`, this.player.x, this.player.y - 20);
+                
+                const feedback = document.getElementById('fungsi-feedback');
+                if (feedback) {
+                    feedback.textContent = `✅ Berhasil! Kamu dapat x = ${this.collectedValue}. Sekarang hitung f(${this.collectedValue}) = 2×${this.collectedValue} + 3`;
+                    feedback.style.color = '#00FF00';
+                }
+                
+                const input = document.getElementById('fungsi-answer');
+                if (input) {
+                    input.placeholder = `f(${this.collectedValue}) = 2×${this.collectedValue} + 3 = ?`;
+                }
+            }
+
+            showFloatingText(text, x, y) {
+                this.ctx.fillStyle = '#00FF00';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(text, x + this.player.width/2, y);
+            }
+
+            checkNumberCollection() {
+                for (let number of this.numbers) {
+                    if (!number.collected && this.isColliding(this.player, {
+                        x: number.x - 10,
+                        y: number.y - 10,
+                        width: 20,
+                        height: 20
+                    })) {
+                        number.collected = true;
+                        number.revealed = true;
+                        this.updateProgressBar();
+                        this.updateCollectionIndicator();
+                        this.showCollectedNumber(number.value);
+                    }
+                }
+            }
+
+            showCollectedNumber(value) {
+                this.showFloatingText(`Dapat: ${value}`, this.player.x, this.player.y - 20);
+                
+                const feedback = document.getElementById('limit-feedback');
+                if (feedback && !feedback.textContent.includes('✅')) {
+                    feedback.textContent += ` ✅ Dapat angka: ${value}`;
+                    feedback.style.color = '#00FF00';
+                }
+            }
+
+            checkCoefficientCollection() {
+                for (let coeff of this.coefficients) {
+                    if (!coeff.collected && this.isColliding(this.player, {
+                        x: coeff.x - 10,
+                        y: coeff.y - 10,
+                        width: 20,
+                        height: 20
+                    })) {
+                        coeff.collected = true;
+                        coeff.revealed = true;
+                        this.collectedCoeffs.push(coeff.value);
+                        this.updateProgressBar();
+                        this.updateCollectionIndicator();
+                        this.showCollectedCoefficient(coeff.value);
+                    }
+                }
+            }
+
+            showCollectedCoefficient(value) {
+                this.showFloatingText(`Dapat: ${value}`, this.player.x, this.player.y - 20);
+                
+                const feedback = document.getElementById('turunan-feedback');
+                if (feedback && !feedback.textContent.includes('✅')) {
+                    feedback.textContent += ` ✅ Dapat: ${value}`;
+                    feedback.style.color = '#00FF00';
+                }
+            }
+
+            updateProgressBar() {
+                let progress = 0;
+                
+                switch(this.type) {
+                    case 'fungsi':
+                        progress = this.collectedValue ? 100 : 0;
+                        break;
+                    case 'limit':
+                        const collectedNumbers = this.numbers.filter(n => n.collected).length;
+                        progress = (collectedNumbers / this.numbers.length) * 100;
+                        break;
+                    case 'turunan':
+                        progress = (this.collectedCoeffs.length / this.coefficients.length) * 100;
+                        break;
+                }
+                
+                const progressBar = document.getElementById(`${this.type}-progress`);
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }
+
+            updateCollectionIndicator() {
+                switch(this.type) {
+                    case 'limit':
+                        this.numbers.forEach(number => {
+                            const indicator = document.getElementById(`limit-item-${number.value}`);
+                            if (indicator) {
+                                if (number.collected) {
+                                    indicator.classList.add('collected');
+                                    indicator.textContent = number.value;
+                                } else {
+                                    indicator.classList.remove('collected');
+                                    indicator.textContent = number.revealed ? number.value : '?';
+                                }
+                            }
+                        });
+                        break;
+                    case 'turunan':
+                        this.coefficients.forEach(coeff => {
+                            const indicator = document.getElementById(`turunan-item-${coeff.value}`);
+                            if (indicator) {
+                                if (coeff.collected) {
+                                    indicator.classList.add('collected');
+                                    indicator.textContent = coeff.value;
+                                } else {
+                                    indicator.classList.remove('collected');
+                                    indicator.textContent = coeff.revealed ? coeff.value : '?';
+                                }
+                            }
+                        });
+                        break;
+                }
+            }
+
+            isColliding(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            }
+
+            render() {
+                this.ctx.fillStyle = '#1a1a2e';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.platforms.forEach(platform => {
+                    this.ctx.fillStyle = platform.color;
+                    this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                });
+
+                switch(this.type) {
+                    case 'fungsi':
+                        this.renderFungsiGame();
+                        break;
+                    case 'limit':
+                        this.renderLimitGame();
+                        break;
+                    case 'turunan':
+                        this.renderTurunanGame();
+                        break;
+                }
+
+                this.drawPlayer();
+                this.drawUI();
+                this.drawDebugInfo();
+            }
+
+            renderFungsiGame() {
+                this.targetPlatforms.forEach(platform => {
+                    const blink = Math.sin(Date.now() / 300) > 0;
+                    this.ctx.fillStyle = blink ? '#FFD700' : '#FFEC8B';
+                    this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                    
+                    this.ctx.strokeStyle = '#FFA500';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+                    
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.textAlign = 'center';
+                    
+                    if (this.collectedValue !== null) {
+                        this.ctx.fillText(`x = ${platform.value}`, platform.x + platform.width/2, platform.y + 10);
+                    } else {
+                        this.ctx.fillText('?', platform.x + platform.width/2, platform.y + 10);
+                    }
+                });
+
+                if (this.collectedValue) {
+                    this.ctx.fillStyle = '#00FF00';
+                    this.ctx.font = 'bold 16px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(`✅ Dapat x = ${this.collectedValue}`, this.canvas.width/2, 30);
+                    this.ctx.fillStyle = '#FFFF00';
+                    this.ctx.font = '14px Arial';
+                    this.ctx.fillText(`Sekarang hitung: f(${this.collectedValue}) = 2×${this.collectedValue} + 3`, this.canvas.width/2, 50);
+                } else {
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 16px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('🎯 Lompat ke platform EMAS untuk mendapatkan nilai x', this.canvas.width/2, 30);
+                    this.ctx.fillStyle = '#FFFFFF';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.fillText('Nilai x akan muncul setelah kamu menginjak platform emas', this.canvas.width/2, 50);
+                }
+            }
+
+            setupSwipeControls() {
+                if (!this.isMobile()) return;
+                
+                let startX = 0;
+                let startY = 0;
+                
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                });
+                
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                });
+                
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    const endX = e.changedTouches[0].clientX;
+                    const endY = e.changedTouches[0].clientY;
+                    
+                    const diffX = endX - startX;
+                    const diffY = endY - startY;
+                    
+                    if (Math.abs(diffX) > 20) {
+                        if (diffX > 0) {
+                            this.keys['d'] = true;
+                            setTimeout(() => this.keys['d'] = false, 200);
+                        } else {
+                            this.keys['a'] = true;
+                            setTimeout(() => this.keys['a'] = false, 200);
+                        }
+                    }
+                    
+                    if (diffY < -30) {
+                        this.keys['w'] = true;
+                        setTimeout(() => this.keys['w'] = false, 200);
+                    }
+                });
+            }
+
+            renderLimitGame() {
+                this.barrels.forEach(barrel => {
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(barrel.x, barrel.y, barrel.width, barrel.height);
+                    
+                    this.ctx.fillStyle = '#5D4037';
+                    this.ctx.fillRect(barrel.x + 5, barrel.y + 5, barrel.width - 10, 3);
+                    this.ctx.fillRect(barrel.x + 5, barrel.y + 12, barrel.width - 10, 3);
+                });
+
+                this.numbers.forEach(number => {
+                    if (!number.collected) {
+                        this.drawNumberIcon(number.x, number.y, number.value, number.revealed);
+                    }
+                });
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Kumpulkan angka 4 dan 2 untuk menyelesaikan limit', this.canvas.width/2, 30);
+                
+                const collectedNumbers = this.numbers.filter(n => n.collected).length;
+                if (collectedNumbers > 0) {
+                    this.ctx.fillStyle = '#00FF00';
+                    this.ctx.fillText(`Angka terkumpul: ${collectedNumbers}/2`, this.canvas.width/2, 50);
+                }
+            }
+
+            renderTurunanGame() {
+                this.coefficients.forEach(coeff => {
+                    if (!coeff.collected) {
+                        this.drawCoefficientIcon(coeff.x, coeff.y, coeff.value, coeff.revealed);
+                    }
+                });
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Kumpulkan koefisien 3, 2, dan x untuk mencari turunan', this.canvas.width/2, 30);
+                
+                if (this.collectedCoeffs.length > 0) {
+                    this.ctx.fillStyle = '#00FF00';
+                    this.ctx.fillText(`Koefisien terkumpul: ${this.collectedCoeffs.join(', ')}`, this.canvas.width/2, 50);
+                }
+            }
+
+            drawDebugInfo() {
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`, 10, this.canvas.height - 30);
+                this.ctx.fillText(`Collected: ${this.collectedValue || 'None'}`, 10, this.canvas.height - 15);
+            }
+
+            drawNumberIcon(x, y, value, revealed) {
+                const colors = {
+                    4: { main: '#FF6B6B', accent: '#FF8E8E' },
+                    2: { main: '#4ECDC4', accent: '#88D8C0' }
+                };
+
+                const color = colors[value] || { main: '#FFD93D', accent: '#FFE87C' };
+                const time = Date.now() * 0.003;
+
+                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, 20);
+                gradient.addColorStop(0, color.main + '60');
+                gradient.addColorStop(1, color.main + '00');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(x - 20, y - 20, 40, 40);
+
+                this.ctx.fillStyle = color.main;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 15, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = color.accent;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                const displayValue = revealed ? value : '?';
+                this.ctx.fillText(displayValue, x, y);
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.globalAlpha = 0.3;
+                this.ctx.beginPath();
+                this.ctx.arc(x - 5, y - 5, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.globalAlpha = 1;
+            }
+
+            drawCoefficientIcon(x, y, value, revealed) {
+                const colors = {
+                    3: { main: '#FFD93D', accent: '#FFE87C' },
+                    2: { main: '#6A0572', accent: '#9D4EDD' },
+                    'x': { main: '#4ECDC4', accent: '#88D8C0' }
+                };
+
+                const color = colors[value] || { main: '#8A2BE2', accent: '#9370DB' };
+                const time = Date.now() * 0.003;
+
+                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, 18);
+                gradient.addColorStop(0, color.main + '60');
+                gradient.addColorStop(1, color.main + '00');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(x - 18, y - 18, 36, 36);
+
+                this.ctx.fillStyle = color.main;
+                this.ctx.beginPath();
+                this.ctx.roundRect(x - 12, y - 12, 24, 24, 6);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = color.accent;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = value === 'x' ? 'bold 12px Arial' : 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                const displayValue = revealed ? value : '?';
+                this.ctx.fillText(displayValue, x, y);
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.globalAlpha = 0.4;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 8, y - 8);
+                this.ctx.lineTo(x - 4, y - 8);
+                this.ctx.lineTo(x - 8, y - 4);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.globalAlpha = 1;
+            }
+            
+            drawPlayer() {
+                const p = this.player;
+                const monkeyImage = document.getElementById('monkey-image');
+                
+                if (monkeyImage && monkeyImage.complete) {
+                    const scale = 1.6;
+                    const scaledWidth = p.width * scale;
+                    const scaledHeight = p.height * scale;
+                    const adjustedX = p.x - (scaledWidth - p.width) / 2;
+                    const adjustedY = p.y - (scaledHeight - p.height) + 5;
+                    this.ctx.drawImage(monkeyImage, adjustedX, adjustedY, scaledWidth, scaledHeight);
+                } else {
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fillRect(p.x, p.y, p.width, p.height);
+                    this.ctx.fillStyle = '#ffdbac';
+                    this.ctx.fillRect(p.x + 3, p.y + 5, p.width - 6, 12);
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.fillRect(p.x + 6, p.y + 7, 3, 3);
+                    this.ctx.fillRect(p.x + p.width - 9, p.y + 7, 3, 3);
+                }
+            }
+
+            drawUI() {
+                this.ctx.fillStyle = '#FFF';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'left';
+                
+                switch(this.type) {
+                    case 'fungsi':
+                        this.ctx.fillText('Lompat ke platform emas untuk mendapatkan nilai x', 10, 20);
+                        break;
+                    case 'limit':
+                        this.ctx.fillText('Hindari barrel dan kumpulkan angka untuk limit', 10, 20);
+                        this.ctx.fillText('Hati-hati! Kena barrel akan mengulang dari awal', 10, 35);
+                        break;
+                    case 'turunan':
+                        this.ctx.fillText('Kumpulkan koefisien untuk turunan f(x) = 3x²', 10, 20);
+                        break;
+                }
+            }
+
+            checkAnswer(answer) {
+                switch(this.type) {
+                    case 'fungsi':
+                        return this.checkFungsiAnswer(answer);
+                    case 'limit':
+                        return this.checkLimitAnswer(answer);
+                    case 'turunan':
+                        return this.checkTurunanAnswer(answer);
+                }
+                return false;
+            }
+
+            checkFungsiAnswer(answer) {
+                if (!this.collectedValue) {
+                    const feedback = document.getElementById('fungsi-feedback');
+                    feedback.textContent = '❌ Pergi ke platform emas dulu untuk mendapatkan nilai x!';
+                    feedback.style.color = '#FFA500';
+                    return false;
+                }
+                
+                const correct = 2 * this.collectedValue + 3;
+                const userAnswer = parseInt(answer);
+                
+                if (userAnswer === correct) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            checkLimitAnswer(answer) {
+                const allCollected = this.numbers.every(n => n.collected);
+                return allCollected && parseInt(answer) === 4;
+            }
+
+            checkTurunanAnswer(answer) {
+                const hasAllCoeffs = this.collectedCoeffs.length === 3;
+                return hasAllCoeffs && answer.toLowerCase() === '6x';
+            }
+
+            reset() {
+                this.stop();
+                this.init();
+            }
+        }
+
+        class MonkeyGame {
+            constructor() {
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 800;
+                this.canvas.height = 600;
+                
+                this.screens = {
+                    story: document.getElementById('story-screen'),
+                    tutorial: document.getElementById('tutorial-screen'),
+                    practice: document.getElementById('practice-screen'),
+                    menu: document.getElementById('menu-screen'),
+                    game: document.getElementById('game-screen'),
+                    math: document.getElementById('math-screen'),
+                    win: document.getElementById('win-screen'),
+                    victory: document.getElementById('victory-screen')
+                };
+                this.victoryAnimation = new VictoryAnimation('victory-canvas');
+
+                this.init();
+                this.setupEventListeners();
+            }
+
+            init() {
+                this.gameState = 'story';
+                this.score = 0;
+                this.level = 1;
+                this.currentProblem = null;
+                this.currentPotionId = null;
+                this.tutorialStep = 0;
+                this.practiceStep = 0;
+                this.practiceGames = {};
+                this.currentPracticeGame = null;
+                
+                this.player = {
+                    x: 100,
+                    y: 450,
+                    width: 30,
+                    height: 40,
+                    velocityX: 0,
+                    velocityY: 0,
+                    speed: 8,
+                    jumpPower: -15,
+                    gravity: 0.8,
+                    isOnGround: false,
+                    color: '#8B4513',
+                    canJump: true
+                };
+
+                this.platforms = [
+                    { x: 0, y: 550, width: 800, height: 50, color: '#5d4037' },
+                    { x: 200, y: 450, width: 200, height: 30, color: '#8d6e63' },
+                    { x: 500, y: 400, width: 180, height: 30, color: '#8d6e63' },
+                    { x: 100, y: 350, width: 150, height: 25, color: '#a1887f' },
+                    { x: 550, y: 300, width: 150, height: 25, color: '#a1887f' },
+                    { x: 300, y: 250, width: 200, height: 25, color: '#a1887f' },
+                    { x: 50, y: 200, width: 120, height: 20, color: '#bcaaa4' },
+                    { x: 600, y: 180, width: 120, height: 20, color: '#bcaaa4' }
+                ];
+
+                this.potions = [
+                    { x: 300, y: 420, collected: false, id: 1 },
+                    { x: 590, y: 370, collected: false, id: 2 },
+                    { x: 175, y: 320, collected: false, id: 3 },
+                    { x: 625, y: 270, collected: false, id: 4 },
+                    { x: 400, y: 220, collected: false, id: 5 }
+                ];
+
+                this.mathProblems = [
+                    {
+                        question: "lim(x→2) (x² - 4)/(x - 2) = ?",
+                        answer: 4,
+                        explanation: "Faktorkan: (x-2)(x+2)/(x-2) = x+2 → 2+2 = 4"
+                    },
+                    {
+                        question: "lim(x→0) sin(3x)/x = ?",
+                        answer: 3,
+                        explanation: "Gunakan sifat: lim(x→0) sin(ax)/x = a"
+                    },
+                    {
+                        question: "lim(x→∞) (3x² + 2x)/(x² - 1) = ?",
+                        answer: 3,
+                        explanation: "Bagi semua suku dengan x²: (3 + 2/x)/(1 - 1/x²) → 3/1 = 3"
+                    },
+                    {
+                        question: "lim(x→1) (√x - 1)/(x - 1) = ?",
+                        answer: 0.5,
+                        explanation: "Rasionalkan atau gunakan L'Hopital"
+                    },
+                    {
+                        question: "Jika f(x) = 2x + 3, lim(h→0) [f(x+h)-f(x)]/h = ?",
+                        answer: 2,
+                        explanation: "Ini adalah turunan f(x) = 2x + 3, yaitu 2"
+                    }
+                ];
+
+                this.keys = {};
+                this.savedPlayerState = null;
+                this.animationId = null;
+                this.setupTouchControls();
+            }
+
+            setupEventListeners() {
+                document.getElementById('next-story-btn').addEventListener('click', () => this.showTutorial());
+                document.getElementById('next-tutorial-btn').addEventListener('click', () => this.nextTutorialStep());
+                document.getElementById('prev-tutorial-btn').addEventListener('click', () => this.prevTutorialStep());
+                document.getElementById('practice-btn').addEventListener('click', () => this.showPractice());
+                document.getElementById('tutorial-btn').addEventListener('click', () => this.showTutorial());
+                document.getElementById('practice-menu-btn').addEventListener('click', () => this.showPractice());
+                document.getElementById('replay-video-btn').addEventListener('click', () => {
+                    this.victoryAnimation.stopAnimation();
+                    setTimeout(() => {
+                        this.victoryAnimation.startAnimation();
+                    }, 100);
+                });
+                document.getElementById('victory-menu-btn').addEventListener('click', () => {
+                    this.victoryAnimation.stopAnimation();
+                    this.showScreen('menu');
+                });
+                document.getElementById('next-practice-btn').addEventListener('click', () => this.nextPracticeStep());
+                document.getElementById('prev-practice-btn').addEventListener('click', () => this.prevPracticeStep());
+                document.getElementById('finish-practice-btn').addEventListener('click', () => this.showScreen('menu'));
+                document.getElementById('submit-fungsi').addEventListener('click', () => this.checkPracticeAnswer('fungsi'));
+                document.getElementById('submit-limit').addEventListener('click', () => this.checkPracticeAnswer('limit'));
+                document.getElementById('submit-turunan').addEventListener('click', () => this.checkPracticeAnswer('turunan'));
+                document.getElementById('start-btn').addEventListener('click', () => this.showScreen('game'));
+                document.getElementById('submit-btn').addEventListener('click', () => this.checkAnswer());
+                document.getElementById('menu-btn').addEventListener('click', () => this.showScreen('menu'));
+                document.getElementById('play-again-btn').addEventListener('click', () => this.showScreen('game'));
+                document.getElementById('main-menu-btn').addEventListener('click', () => this.showScreen('menu'));
+                
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    
+                    if (e.key === 'Enter' && this.gameState === 'math') {
+                        this.checkAnswer();
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+
+                document.getElementById('answer-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkAnswer();
+                    }
+                });
+
+                this.setupTouchControls();
+                this.setupMobileControlsVisibility();
+            }
+
+            setupTouchControls() {
+                if (!this.isMobile()) {
+                    return;
+                }
+                
+                const leftBtn = document.querySelector('.left-btn');
+                const rightBtn = document.querySelector('.right-btn');
+                const jumpBtn = document.querySelector('.jump-btn');
+                
+                if (!leftBtn || !rightBtn || !jumpBtn) {
+                    return;
+                }
+                
+                const handleTouchStart = (btn, key) => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = true;
+                    });
+                };
+                
+                const handleTouchEnd = (btn, key) => {
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                };
+                
+                handleTouchStart(leftBtn, 'a');
+                handleTouchEnd(leftBtn, 'a');
+                handleTouchStart(rightBtn, 'd');
+                handleTouchEnd(rightBtn, 'd');
+                handleTouchStart(jumpBtn, 'w');
+                handleTouchEnd(jumpBtn, 'w');
+                
+                [leftBtn, rightBtn, jumpBtn].forEach(btn => {
+                    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+                });
+            }
+
+            setupMobileControlsVisibility() {
+                const mobileControls = document.getElementById('mobile-controls');
+                if (!mobileControls) return;
+                
+                const showControls = () => {
+                    const shouldShow = this.isMobile() && 
+                                     (this.gameState === 'game' || this.gameState === 'practice');
+                    
+                    if (shouldShow) {
+                        mobileControls.classList.add('active');
+                    } else {
+                        mobileControls.classList.remove('active');
+                    }
+                };
+                
+                const originalShowScreen = this.showScreen.bind(this);
+                this.showScreen = (screenName) => {
+                    originalShowScreen(screenName);
+                    setTimeout(showControls, 50);
+                };
+                
+                window.addEventListener('resize', showControls);
+                showControls();
+            }
+
+            isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       window.innerWidth <= 768;
+            }
+
+            showTutorial() {
+                this.tutorialStep = 0;
+                this.updateTutorialDisplay();
+                this.showScreen('tutorial');
+            }
+
+            nextTutorialStep() {
+                if (this.tutorialStep < 2) {
+                    this.tutorialStep++;
+                    this.updateTutorialDisplay();
+                }
+            }
+
+            prevTutorialStep() {
+                if (this.tutorialStep > 0) {
+                    this.tutorialStep--;
+                    this.updateTutorialDisplay();
+                }
+            }
+
+            updateTutorialDisplay() {
+                document.querySelectorAll('.tutorial-step').forEach(step => {
+                    step.classList.remove('active');
+                });
+                
+                const activeStep = document.getElementById(`step-${['fungsi', 'limit', 'turunan'][this.tutorialStep]}`);
+                activeStep.classList.add('active');
+                
+                const prevBtn = document.getElementById('prev-tutorial-btn');
+                const nextBtn = document.getElementById('next-tutorial-btn');
+                const practiceBtn = document.getElementById('practice-btn');
+                
+                prevBtn.disabled = this.tutorialStep === 0;
+                
+                if (this.tutorialStep === 2) {
+                    nextBtn.style.display = 'none';
+                    practiceBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'inline-block';
+                    practiceBtn.style.display = 'none';
+                }
+            }
+
+            showPractice() {
+                this.practiceStep = 0;
+                this.initializePracticeGames();
+                this.updatePracticeDisplay();
+                this.showScreen('practice');
+            }
+
+            initializePracticeGames() {
+                this.practiceGames.fungsi = new PracticeGame('fungsi-canvas', 'fungsi');
+                this.practiceGames.limit = new PracticeGame('limit-canvas', 'limit');
+                this.practiceGames.turunan = new PracticeGame('turunan-canvas', 'turunan');
+            }
+
+            nextPracticeStep() {
+                if (this.practiceStep < 2) {
+                    if (this.currentPracticeGame) {
+                        this.currentPracticeGame.stop();
+                    }
+                    
+                    this.practiceStep++;
+                    this.updatePracticeDisplay();
+                }
+            }
+
+            prevPracticeStep() {
+                if (this.practiceStep > 0) {
+                    if (this.currentPracticeGame) {
+                        this.currentPracticeGame.stop();
+                    }
+                    
+                    this.practiceStep--;
+                    this.updatePracticeDisplay();
+                }
+            }
+
+            updatePracticeDisplay() {
+                document.querySelectorAll('.practice-step').forEach(step => {
+                    step.classList.remove('active');
+                });
+                
+                const practiceTypes = ['fungsi', 'limit', 'turunan'];
+                const currentType = practiceTypes[this.practiceStep];
+                const activeStep = document.getElementById(`practice-${currentType}`);
+                activeStep.classList.add('active');
+                
+                const turunanInput = document.getElementById('turunan-answer');
+                if (turunanInput) {
+                    turunanInput.type = currentType === 'turunan' ? 'text' : 'number';
+                    turunanInput.placeholder = currentType === 'turunan' ? 'Masukkan jawaban (contoh: 6x)' : 'Masukkan jawaban';
+                }
+                
+                this.currentPracticeGame = this.practiceGames[currentType];
+                if (this.currentPracticeGame) {
+                    this.currentPracticeGame.start();
+                }
+                
+                const prevBtn = document.getElementById('prev-practice-btn');
+                const nextBtn = document.getElementById('next-practice-btn');
+                const finishBtn = document.getElementById('finish-practice-btn');
+                
+                prevBtn.disabled = this.practiceStep === 0;
+                
+                if (this.practiceStep === 2) {
+                    nextBtn.style.display = 'none';
+                    finishBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'inline-block';
+                    finishBtn.style.display = 'none';
+                }
+            }
+
+            checkPracticeAnswer(type) {
+                const input = document.getElementById(`${type}-answer`);
+                const feedback = document.getElementById(`${type}-feedback`);
+                const answer = input.value.trim();
+                
+                if (!answer) {
+                    feedback.textContent = 'Masukkan jawaban terlebih dahulu!';
+                    feedback.style.color = '#FFA500';
+                    return;
+                }
+                
+                if (this.practiceGames[type].checkAnswer(answer)) {
+                    feedback.textContent = '✓ BENAR! Kamu menguasai konsep ini.';
+                    feedback.style.color = '#00FF00';
+                    input.disabled = true;
+                    document.getElementById(`submit-${type}`).disabled = true;
+                } else {
+                    feedback.textContent = '✗ Salah! Coba lagi dan perhatikan konsepnya.';
+                    feedback.style.color = '#FFA500';
+                }
+            }
+
+            showScreen(screenName) {
+                if (screenName !== 'practice' && this.currentPracticeGame) {
+                    this.currentPracticeGame.stop();
+                    this.currentPracticeGame = null;
+                }
+                if (screenName === 'victory') {
+                    setTimeout(() => {
+                        this.victoryAnimation.startAnimation();
+                    }, 500);
+                }
+                if (screenName !== 'game' && this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                
+                Object.values(this.screens).forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                
+                this.screens[screenName].classList.add('active');
+                this.gameState = screenName;
+                
+                if (screenName === 'game') {
+                    if (!this.savedPlayerState && this.score === 0) {
+                        this.resetGame();
+                    }
+                    this.gameLoop();
+                } else if (screenName === 'menu') {
+                    this.resetGame();
+                    this.savedPlayerState = null;
+                } else if (screenName === 'win') {
+                    document.getElementById('final-score').textContent = this.score;
+                }
+            }
+
+            resetGame() {
+                this.score = 0;
+                this.player.x = 100;
+                this.player.y = 450;
+                this.player.velocityX = 0;
+                this.player.velocityY = 0;
+                this.player.isOnGround = false;
+                this.player.canJump = true;
+                this.savedPlayerState = null;
+                this.currentPotionId = null;
+                
+                this.potions.forEach(potion => {
+                    potion.collected = false;
+                });
+                
+                this.updateScore();
+            }
+
+            savePlayerState() {
+                this.savedPlayerState = {
+                    x: this.player.x,
+                    y: this.player.y,
+                    velocityX: this.player.velocityX,
+                    velocityY: this.player.velocityY,
+                    isOnGround: this.player.isOnGround
+                };
+            }
+
+            restorePlayerState() {
+                if (this.savedPlayerState) {
+                    this.player.x = this.savedPlayerState.x;
+                    this.player.y = this.savedPlayerState.y;
+                    this.player.velocityX = this.savedPlayerState.velocityX;
+                    this.player.velocityY = this.savedPlayerState.velocityY;
+                    this.player.isOnGround = this.savedPlayerState.isOnGround;
+                }
+            }
+
+            updateScore() {
+                const scoreElement = document.getElementById('score');
+                if (scoreElement) {
+                    scoreElement.textContent = this.score;
+                }
+            }
+
+            gameLoop() {
+                if (this.gameState !== 'game') return;
+                
+                this.update();
+                this.render();
+                this.animationId = requestAnimationFrame(() => this.gameLoop());
+            }
+
+            update() {
+                this.handleInput();
+                this.applyPhysics();
+                this.checkCollisions();
+                this.checkPotionCollection();
+            }
+
+            handleInput() {
+                if (this.keys['a'] || this.keys['arrowleft']) {
+                    this.player.velocityX = -this.player.speed;
+                } else if (this.keys['d'] || this.keys['arrowright']) {
+                    this.player.velocityX = this.player.speed;
+                } else {
+                    this.player.velocityX *= 0.8;
+                }
+
+                const jumpPressed = this.keys['w'] || this.keys['arrowup'] || this.keys[' '];
+                if (jumpPressed && this.player.isOnGround && this.player.canJump) {
+                    this.player.velocityY = this.player.jumpPower;
+                    this.player.isOnGround = false;
+                    this.player.canJump = false;
+                }
+
+                if (!jumpPressed) {
+                    this.player.canJump = true;
+                }
+            }
+
+            applyPhysics() {
+                this.player.velocityY += this.player.gravity;
+                this.player.x += this.player.velocityX;
+                this.player.y += this.player.velocityY;
+
+                if (this.player.x < 0) this.player.x = 0;
+                if (this.player.x > this.canvas.width - this.player.width) {
+                    this.player.x = this.canvas.width - this.player.width;
+                }
+
+                if (this.player.y > this.canvas.height - this.player.height) {
+                    this.player.y = this.canvas.height - this.player.height;
+                    this.player.velocityY = 0;
+                    this.player.isOnGround = true;
+                }
+            }
+
+            checkCollisions() {
+                this.player.isOnGround = false;
+                
+                for (let platform of this.platforms) {
+                    if (this.isColliding(this.player, platform)) {
+                        const bottomCollision = this.player.y + this.player.height - platform.y;
+                        
+                        if (bottomCollision < 20 && this.player.velocityY > 0) {
+                            this.player.y = platform.y - this.player.height;
+                            this.player.velocityY = 0;
+                            this.player.isOnGround = true;
+                        }
+                    }
+                }
+            }
+
+            checkPotionCollection() {
+                for (let potion of this.potions) {
+                    if (!potion.collected && this.isColliding(this.player, {
+                        x: potion.x - 15,
+                        y: potion.y - 15,
+                        width: 30,
+                        height: 30
+                    })) {
+                        potion.collected = true;
+                        this.currentPotionId = potion.id;
+                        this.showMathProblem();
+                        break;
+                    }
+                }
+            }
+
+            showMathProblem() {
+                this.savePlayerState();
+                this.gameState = 'math';
+                
+                const randomIndex = Math.floor(Math.random() * this.mathProblems.length);
+                this.currentProblem = this.mathProblems[randomIndex];
+                
+                document.getElementById('math-question').textContent = this.currentProblem.question;
+                document.getElementById('answer-input').value = '';
+                document.getElementById('math-feedback').textContent = '';
+                
+                this.showScreen('math');
+            }
+
+            checkAnswer() {
+                const input = document.getElementById('answer-input');
+                const feedback = document.getElementById('math-feedback');
+                const userAnswer = parseFloat(input.value);
+
+                if (isNaN(userAnswer)) {
+                    feedback.textContent = 'Masukkan angka yang valid!';
+                    feedback.style.color = '#FFA500';
+                    return;
+                }
+
+                if (Math.abs(userAnswer - this.currentProblem.answer) < 0.001) {
+                    feedback.textContent = '✓ Benar! ' + this.currentProblem.explanation;
+                    feedback.style.color = '#00FF00';
+                    this.score += 50;
+                    this.updateScore();
+
+                    setTimeout(() => {
+                        this.restorePlayerState();
+                        this.showScreen('game');
+                        this.gameState = 'game';
+
+                        if (this.potions.every(p => p.collected)) {
+                            setTimeout(() => {
+                                this.showScreen('victory');
+                                this.gameState = 'victory';
+                            }, 1000);
+                        }
+                    }, 2000);
+                } else {
+                    feedback.textContent = '✗ Salah! Coba lagi.';
+                    feedback.style.color = '#FF4444';
+                }
+            }
+
+            isColliding(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            }
+
+            render() {
+                this.ctx.fillStyle = '#1a1a2e';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.platforms.forEach(platform => {
+                    this.ctx.fillStyle = platform.color;
+                    this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                });
+
+                this.potions.forEach(potion => {
+                    if (!potion.collected) {
+                        this.drawPotionIcon(potion.x, potion.y, potion.id);
+                    }
+                });
+
+                this.drawPlayer();
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText(`Skor: ${this.score}`, 20, 30);
+            }
+
+            drawPotionIcon(x, y, potionId) {
+                const colors = [
+                    { bottle: '#8A2BE2', liquid: '#9370DB', glow: '#DA70D6' },
+                    { bottle: '#FF6B6B', liquid: '#FF8E8E', glow: '#FFB6C1' },
+                    { bottle: '#4ECDC4', liquid: '#88D8C0', glow: '#B2F2E8' },
+                    { bottle: '#FFD93D', liquid: '#FFE87C', glow: '#FFF4B8' },
+                    { bottle: '#6A0572', liquid: '#9D4EDD', glow: '#C77DFF' }
+                ];
+
+                const color = colors[potionId % colors.length];
+                const time = Date.now() * 0.002;
+                const pulse = Math.sin(time) * 0.2 + 0.8;
+                
+                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, 25);
+                gradient.addColorStop(0, color.glow + '80');
+                gradient.addColorStop(1, color.glow + '00');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(x - 25, y - 25, 50, 50);
+
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                const floatOffset = Math.sin(time + potionId) * 3;
+                this.ctx.translate(0, floatOffset);
+                const rotation = Math.sin(time * 0.5 + potionId) * 0.1;
+                this.ctx.rotate(rotation);
+                this.drawPotionBottle(0, 0, color, pulse);
+                this.ctx.restore();
+                this.drawPotionBubbles(x, y, time, potionId);
+            }
+
+            drawPotionBottle(x, y, color, pulse) {
+                this.ctx.fillStyle = color.bottle;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 8, y - 15);
+                this.ctx.lineTo(x - 12, y + 10);
+                this.ctx.lineTo(x + 12, y + 10);
+                this.ctx.lineTo(x + 8, y - 15);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                this.ctx.fillStyle = color.bottle;
+                this.ctx.fillRect(x - 6, y - 20, 12, 5);
+                this.ctx.fillRect(x - 4, y - 25, 8, 5);
+
+                this.ctx.fillStyle = color.liquid;
+                this.ctx.globalAlpha = 0.8 * pulse;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 7, y - 14);
+                this.ctx.lineTo(x - 10, y + 8);
+                this.ctx.lineTo(x + 10, y + 8);
+                this.ctx.lineTo(x + 7, y - 14);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.globalAlpha = 0.3 * pulse;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 5, y - 12);
+                this.ctx.lineTo(x - 2, y - 8);
+                this.ctx.lineTo(x + 2, y - 10);
+                this.ctx.lineTo(x + 1, y - 13);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                this.ctx.globalAlpha = 1;
+            }
+
+            drawPotionBubbles(x, y, time, potionId) {
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.globalAlpha = 0.6;
+
+                for (let i = 0; i < 4; i++) {
+                    const angle = time * 2 + (i * Math.PI / 2) + potionId;
+                    const distance = 15 + Math.sin(time * 3 + i) * 5;
+                    const bubbleX = x + Math.cos(angle) * distance;
+                    const bubbleY = y + Math.sin(angle) * distance;
+                    const size = 2 + Math.sin(time * 4 + i) * 1;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(bubbleX, bubbleY, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                this.ctx.globalAlpha = 1;
+            }
+
+            drawPlayer() {
+                const p = this.player;
+                const monkeyImage = document.getElementById('monkey-image');
+                
+                if (monkeyImage && monkeyImage.complete) {
+                    const scale = 1.6;
+                    const scaledWidth = p.width * scale;
+                    const scaledHeight = p.height * scale;
+                    const adjustedX = p.x - (scaledWidth - p.width) / 2;
+                    const adjustedY = p.y - (scaledHeight - p.height) + 5;
+                    this.ctx.drawImage(monkeyImage, adjustedX, adjustedY, scaledWidth, scaledHeight);
+                } else {
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fillRect(p.x, p.y, p.width, p.height);
+                    this.ctx.fillStyle = '#ffdbac';
+                    this.ctx.fillRect(p.x + 5, p.y + 8, p.width - 10, 15);
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.fillRect(p.x + 8, p.y + 12, 4, 4);
+                    this.ctx.fillRect(p.x + p.width - 12, p.y + 12, 4, 4);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(p.x + 10, p.y + 20);
+                    this.ctx.lineTo(p.x + p.width - 10, p.y + 20);
+                    this.ctx.strokeStyle = '#000000';
+                    this.ctx.stroke();
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            new MonkeyGame();
+        });
+    </script>
+</body>
+</html>
